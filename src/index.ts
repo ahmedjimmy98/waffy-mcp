@@ -31,22 +31,34 @@ if (guidelines) console.error("[waffy] guidelines loaded:", guidelines.guideline
 
 function getDesignTokens(args: any): string {
   if (!tokens) return JSON.stringify({ error: "no tokens.json" });
+
   const cat = args?.category ?? "all";
+
   if (cat === "all") {
-    return JSON.stringify({
-      colors: tokens.colors,
-      gradients: tokens.gradients,
-      typography: tokens.typography,
-      spacing: tokens.spacing,
-      radii: tokens.radii,
-    }, null, 2);
+    return JSON.stringify(
+      {
+        colors: tokens.colors,
+        gradients: tokens.gradients,
+        typography: tokens.typography,
+        spacing: tokens.spacing,
+        radii: tokens.radii,
+      },
+      null,
+      2
+    );
   }
+
   const val = tokens[cat];
-  return val ? JSON.stringify({ [cat]: val }, null, 2) : JSON.stringify({ error: "unknown category" });
+  return val
+    ? JSON.stringify({ [cat]: val }, null, 2)
+    : JSON.stringify({ error: "unknown category" });
 }
 
 function listComponents(): string {
-  if (!components?.components) return JSON.stringify({ error: "no components.json" });
+  if (!components?.components) {
+    return JSON.stringify({ error: "no components.json" });
+  }
+
   return JSON.stringify(
     components.components.map((c: any) => ({
       name: c.name,
@@ -59,15 +71,22 @@ function listComponents(): string {
 }
 
 function lookupComponent(args: any): string {
-  if (!components?.components) return JSON.stringify({ error: "no components.json" });
+  if (!components?.components) {
+    return JSON.stringify({ error: "no components.json" });
+  }
+
   const q = (args?.name ?? "").toLowerCase();
-  const m = components.components.find((c: any) => c.name.toLowerCase().includes(q));
+  const m = components.components.find((c: any) =>
+    c.name.toLowerCase().includes(q)
+  );
+
   return m ? JSON.stringify(m, null, 2) : "Not found. Use list_components.";
 }
 
 function getGuidelines(args: any): string {
   const results: any[] = [];
   const q = args?.component?.toLowerCase();
+
   if (components?.components) {
     for (const c of components.components) {
       if (c.guidelines && (!q || c.name.toLowerCase().includes(q))) {
@@ -75,6 +94,7 @@ function getGuidelines(args: any): string {
       }
     }
   }
+
   if (guidelines?.guidelines) {
     for (const g of guidelines.guidelines) {
       if (!q || g.source.toLowerCase().includes(q) || g.text.toLowerCase().includes(q)) {
@@ -82,13 +102,20 @@ function getGuidelines(args: any): string {
       }
     }
   }
-  return results.length > 0 ? JSON.stringify(results, null, 2) : "No guidelines found.";
+
+  return results.length > 0
+    ? JSON.stringify(results, null, 2)
+    : "No guidelines found.";
 }
 
 function generateCode(args: any): string {
   if (!components?.components) return "No components.";
+
   const q = (args?.component ?? "").toLowerCase();
-  const comp = components.components.find((x: any) => x.name.toLowerCase().includes(q));
+  const comp = components.components.find((x: any) =>
+    x.name.toLowerCase().includes(q)
+  );
+
   if (!comp) return "Component not found.";
 
   const safeName = comp.name.replace(/[^a-zA-Z0-9]/g, "");
@@ -98,7 +125,15 @@ function generateCode(args: any): string {
   if (fw === "react") {
     const types = props
       .map((p: any) => {
-        if (p.type === "enum") return "  " + p.name + "?: " + (p.options ?? []).map((o: string) => "\"" + o + "\"").join(" | ") + ";";
+        if (p.type === "enum") {
+          return (
+            "  " +
+            p.name +
+            "?: " +
+            (p.options ?? []).map((o: string) => `"${o}"`).join(" | ") +
+            ";"
+          );
+        }
         if (p.type === "boolean") return "  " + p.name + "?: boolean;";
         if (p.type === "number") return "  " + p.name + "?: number;";
         return "  " + p.name + "?: string;";
@@ -107,19 +142,24 @@ function generateCode(args: any): string {
 
     return [
       "// Waffy — " + comp.name,
-      "import { " + safeName + " } from \"@waffy/ui\";",
+      `import { ${safeName} } from "@waffy/ui";`,
       "",
-      "interface " + safeName + "Props {",
+      `interface ${safeName}Props {`,
       types || "  // no typed props yet",
       "}",
     ].join("\n");
   }
 
   if (fw === "vue") {
-    return "<template>\n  <" + safeName + " />\n</template>\n<script setup>\nimport { " + safeName + " } from \"@waffy/ui\";\n</script>";
+    return `<template>
+  <${safeName} />
+</template>
+<script setup>
+import { ${safeName} } from "@waffy/ui";
+</script>`;
   }
 
-  return "<div class=\"waffy-" + safeName.toLowerCase() + "\" dir=\"rtl\"></div>";
+  return `<div class="waffy-${safeName.toLowerCase()}" dir="rtl"></div>`;
 }
 
 function searchDS(args: any): string {
@@ -128,8 +168,15 @@ function searchDS(args: any): string {
 
   if (components?.components) {
     for (const c of components.components) {
-      if (c.name.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)) {
-        results.push({ type: "component", name: c.name, description: c.description });
+      if (
+        c.name.toLowerCase().includes(q) ||
+        c.description?.toLowerCase().includes(q)
+      ) {
+        results.push({
+          type: "component",
+          name: c.name,
+          description: c.description,
+        });
       }
     }
   }
@@ -142,7 +189,9 @@ function searchDS(args: any): string {
     }
   }
 
-  return results.length > 0 ? JSON.stringify(results.slice(0, 20), null, 2) : "No results.";
+  return results.length > 0
+    ? JSON.stringify(results.slice(0, 20), null, 2)
+    : "No results.";
 }
 
 // ─── WRITE OPERATIONS ───
@@ -151,7 +200,9 @@ const CODE_DIR = path.resolve(DATA_DIR, "component-code");
 if (!fs.existsSync(CODE_DIR)) fs.mkdirSync(CODE_DIR, { recursive: true });
 
 function updateComponent(args: any): string {
-  if (!components?.components) return JSON.stringify({ error: "no components.json" });
+  if (!components?.components) {
+    return JSON.stringify({ error: "no components.json" });
+  }
 
   const name = args?.name;
   if (!name) return JSON.stringify({ error: "name is required" });
@@ -181,8 +232,14 @@ function updateComponent(args: any): string {
 
   const fp = path.join(DATA_DIR, "components.json");
   fs.writeFileSync(fp, JSON.stringify(components, null, 2), "utf-8");
+
   console.error("[waffy] component updated:", name);
-  return JSON.stringify({ success: true, component: name, action: idx === -1 ? "created" : "updated" });
+
+  return JSON.stringify({
+    success: true,
+    component: name,
+    action: idx === -1 ? "created" : "updated",
+  });
 }
 
 function uploadComponentCode(args: any): string {
@@ -195,8 +252,9 @@ function uploadComponentCode(args: any): string {
   if (!code) return JSON.stringify({ error: "code is required" });
 
   const safeName = componentName.replace(/[^a-zA-Z0-9_-]/g, "");
-  const ext = framework === "vue" ? ".vue" : framework === "html" ? ".html" : ".jsx";
-  const fname = filename || (safeName + ext);
+  const ext =
+    framework === "vue" ? ".vue" : framework === "html" ? ".html" : ".jsx";
+  const fname = filename || safeName + ext;
   const fp = path.join(CODE_DIR, fname);
 
   fs.writeFileSync(fp, code, "utf-8");
@@ -222,11 +280,18 @@ function getComponentCode(args: any): string {
     const fp = path.join(CODE_DIR, safeName + ext);
     if (fs.existsSync(fp)) {
       const code = fs.readFileSync(fp, "utf-8");
-      return JSON.stringify({ component: componentName, file: safeName + ext, code });
+      return JSON.stringify({
+        component: componentName,
+        file: safeName + ext,
+        code,
+      });
     }
   }
 
-  const files = fs.readdirSync(CODE_DIR).filter(f => f.toLowerCase().startsWith(safeName.toLowerCase()));
+  const files = fs
+    .readdirSync(CODE_DIR)
+    .filter((f) => f.toLowerCase().startsWith(safeName.toLowerCase()));
+
   if (files.length > 0) {
     return JSON.stringify({ component: componentName, files });
   }
@@ -236,7 +301,8 @@ function getComponentCode(args: any): string {
 
 function listComponentCode(): string {
   if (!fs.existsSync(CODE_DIR)) return JSON.stringify({ files: [] });
-  const files = fs.readdirSync(CODE_DIR).filter(f => !f.startsWith("."));
+
+  const files = fs.readdirSync(CODE_DIR).filter((f) => !f.startsWith("."));
   return JSON.stringify({ files });
 }
 
@@ -356,25 +422,52 @@ function createServer(): Server {
     { capabilities: { tools: {} } }
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: TOOLS,
+  }));
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: args } = req.params;
     let text: string;
+
     switch (name) {
-      case "get_design_tokens": text = getDesignTokens(args); break;
-      case "list_components": text = listComponents(); break;
-      case "lookup_component": text = lookupComponent(args); break;
-      case "get_usage_guidelines": text = getGuidelines(args); break;
-      case "generate_code_snippet": text = generateCode(args); break;
-      case "search_design_system": text = searchDS(args); break;
-      case "update_component": text = updateComponent(args); break;
-      case "upload_component_code": text = uploadComponentCode(args); break;
-      case "get_component_code": text = getComponentCode(args); break;
-      case "list_component_code": text = listComponentCode(); break;
-      default: text = "Unknown tool: " + name;
+      case "get_design_tokens":
+        text = getDesignTokens(args);
+        break;
+      case "list_components":
+        text = listComponents();
+        break;
+      case "lookup_component":
+        text = lookupComponent(args);
+        break;
+      case "get_usage_guidelines":
+        text = getGuidelines(args);
+        break;
+      case "generate_code_snippet":
+        text = generateCode(args);
+        break;
+      case "search_design_system":
+        text = searchDS(args);
+        break;
+      case "update_component":
+        text = updateComponent(args);
+        break;
+      case "upload_component_code":
+        text = uploadComponentCode(args);
+        break;
+      case "get_component_code":
+        text = getComponentCode(args);
+        break;
+      case "list_component_code":
+        text = listComponentCode();
+        break;
+      default:
+        text = "Unknown tool: " + name;
     }
-    return { content: [{ type: "text", text }] };
+
+    return {
+      content: [{ type: "text", text }],
+    };
   });
 
   return server;
@@ -385,60 +478,100 @@ function createServer(): Server {
 const app = express();
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 
-// Store active transports for cleanup
-const transports = new Map<string, SSEServerTransport>();
+app.use(express.json({ limit: "10mb" }));
 
-// CORS for cross-origin MCP clients
-app.use((_req, res, next) => {
+// CORS
+app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (_req.method === "OPTIONS") {
-    res.status(204).end();
-    return;
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+  res.setHeader("Access-Control-Expose-Headers", "*");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
   }
+
   next();
 });
 
 // Health check
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", server: "waffy-design-system", version: "3.0.0" });
+app.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    name: "waffy-design-system",
+    version: "3.0.0",
+    endpoints: {
+      health: "/health",
+      sse: "/sse",
+      messages: "/messages?sessionId=...",
+    },
+  });
 });
 
-// SSE endpoint — clients connect here
+app.get("/health", (_req, res) => {
+  res.json({
+    status: "ok",
+    server: "waffy-design-system",
+    version: "3.0.0",
+  });
+});
+
+// Active transports
+const transports = new Map<string, SSEServerTransport>();
+
+// SSE endpoint
 app.get("/sse", async (req, res) => {
   console.error("[waffy] SSE connection from", req.ip);
 
-  const transport = new SSEServerTransport("/messages", res);
-  const server = createServer();
+  try {
+    const transport = new SSEServerTransport("/messages", res);
+    const server = createServer();
 
-  transports.set(transport.sessionId, transport);
+    transports.set(transport.sessionId, transport);
 
-  // Clean up on disconnect
-  res.on("close", () => {
-    console.error("[waffy] SSE client disconnected:", transport.sessionId);
-    transports.delete(transport.sessionId);
-    server.close().catch(console.error);
-  });
+    req.on("close", () => {
+      console.error("[waffy] SSE client disconnected:", transport.sessionId);
+      transports.delete(transport.sessionId);
+      server.close().catch(console.error);
+    });
 
-  await server.connect(transport);
-});
-
-// Message endpoint — clients POST tool calls here
-app.post("/messages", express.json(), async (req, res) => {
-  const sessionId = req.query["sessionId"] as string;
-  const transport = transports.get(sessionId);
-
-  if (!transport) {
-    res.status(400).json({ error: "No active SSE session for this sessionId" });
-    return;
+    await server.connect(transport);
+  } catch (error) {
+    console.error("[waffy] SSE error:", error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Failed to establish SSE connection" });
+    }
   }
-
-  await transport.handlePostMessage(req, res);
 });
 
-// Start server
+// POST message endpoint
+app.post("/messages", async (req, res) => {
+  try {
+    const sessionId = req.query["sessionId"] as string;
+    const transport = transports.get(sessionId);
+
+    if (!sessionId) {
+      return res.status(400).json({ error: "Missing sessionId query parameter" });
+    }
+
+    if (!transport) {
+      return res.status(400).json({
+        error: "No active SSE session for this sessionId",
+        sessionId,
+      });
+    }
+
+    await transport.handlePostMessage(req, res);
+  } catch (error) {
+    console.error("[waffy] POST /messages error:", error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Failed to handle MCP message" });
+    }
+  }
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.error(`[waffy] MCP SSE server listening on http://0.0.0.0:${PORT}`);
-  console.error(`[waffy] Connect your AI tool to http://localhost:${PORT}/sse`);
+  console.error(`[waffy] Health check: http://0.0.0.0:${PORT}/health`);
+  console.error(`[waffy] SSE endpoint: http://0.0.0.0:${PORT}/sse`);
 });
