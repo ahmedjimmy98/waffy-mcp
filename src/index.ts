@@ -478,7 +478,12 @@ function createServer(): Server {
 const app = express();
 const PORT = parseInt(process.env["PORT"] ?? "3000", 10);
 
-app.use(express.json({ limit: "10mb" }));
+// IMPORTANT: exclude /messages from body parsing — the MCP SSE transport
+// needs to read the raw request stream itself. express.json() consumes it.
+app.use((req, res, next) => {
+  if (req.path === '/messages') return next();
+  express.json({ limit: '10mb' })(req, res, next);
+});
 
 // CORS
 app.use((req, res, next) => {
