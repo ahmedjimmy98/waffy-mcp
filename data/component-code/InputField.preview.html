@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WaFFY — InputField Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Rubik', sans-serif; background: #f8f9fb; color: #10131d; padding: 32px; }
+
+    .group { margin-bottom: 40px; }
+    .group-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .08em; color: #8e94a3; margin-bottom: 16px;
+    }
+    .col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .col-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    /* ── Input field ── */
+    .input-wrap { display:flex; flex-direction:column; gap:4px; width:100%; direction:rtl; }
+    .input-box {
+      position:relative; display:flex; align-items:center; height:48px;
+      border-radius:10px; border:1.5px solid #eef0f5; background:#fff;
+      padding:0 14px; cursor:text; transition:border-color .15s, box-shadow .15s;
+    }
+    .input-box:hover { border-color:#c7cbd7; }
+    .input-box.active { border-color:#84b8ff; box-shadow:0 0 0 2px #ebf4ff; }
+    .input-box.error  { border-color:#e32a34; }
+    .input-box.filled { border-color:#eef0f5; }
+    .input-box .fl {
+      position:absolute; top:50%; right:14px; transform:translateY(-50%);
+      font-size:14px; font-weight:400; color:#8e94a3;
+      transition:all .15s ease; pointer-events:none; line-height:1;
+    }
+    .input-box.float .fl { top:8px; transform:none; font-size:10px; }
+    .input-box.active .fl { color:#0051ff; }
+    .input-box input {
+      width:100%; border:none; outline:none; background:transparent;
+      font-family:'Rubik',sans-serif; font-size:14px; font-weight:500;
+      color:#181b23; caret-color:#0051ff; text-align:right; direction:rtl;
+    }
+    .input-box.float input { padding-top:14px; }
+    .input-box input:disabled { color:#8e94a3; }
+    .help-text  { font-size:10px; color:#8e94a3; text-align:right; padding-top:6px; padding-right:16px; }
+    .error-text { font-size:10px; color:#e32a34; text-align:right; padding-top:6px; padding-right:16px; }
+    .curr {
+      display:flex; align-items:center; user-select:none; flex-shrink:0;
+      order:1; margin-inline-start:8px; padding-inline-start:12px;
+      border-inline-start:1px solid #eef0f5;
+    }
+
+    /* ── Paragraph ── */
+    .para-box {
+      border-radius:10px; border:1.5px solid #eef0f5; background:#fff;
+      padding:12px 14px; transition:border-color .15s, box-shadow .15s;
+    }
+    .para-box:hover { border-color:#c7cbd7; }
+    .para-box.active { border-color:#84b8ff; box-shadow:0 0 0 2px #ebf4ff; }
+    .para-box textarea {
+      width:100%; border:none; outline:none; background:transparent;
+      font-family:'Rubik',sans-serif; font-size:14px; color:#181b23;
+      resize:none; min-height:80px; caret-color:#0051ff;
+      text-align:right; direction:rtl;
+    }
+    .char-count { font-size:10px; color:#8e94a3; text-align:right; margin-top:4px; }
+
+    /* ── Dropdown ── */
+    .dd-wrap { position:relative; display:flex; flex-direction:column; gap:4px; width:100%; direction:rtl; }
+    .dd-btn {
+      position:relative; display:flex; align-items:center; height:48px;
+      border-radius:10px; border:1.5px solid #eef0f5; background:#fff;
+      padding:0 14px; cursor:pointer; width:100%;
+      font-family:'Rubik',sans-serif; text-align:right; transition:all .15s;
+    }
+    .dd-btn:hover { border-color:#c7cbd7; }
+    .dd-btn.open { border-radius:10px 10px 0 0; border-color:#84b8ff; border-bottom:1px solid #eef0f5; box-shadow:0 0 0 2px #ebf4ff; }
+    .dd-btn.sel  { border-color:#eef0f5; }
+    .dd-btn.error { border-color:#e32a34; }
+    .dd-btn .fl {
+      position:absolute; top:50%; right:14px; transform:translateY(-50%);
+      font-size:14px; font-weight:400; color:#8e94a3;
+      transition:all .15s ease; pointer-events:none; line-height:1;
+    }
+    .dd-btn.float .fl { top:8px; transform:none; font-size:10px; color:#8e94a3; }
+    .dd-btn.open .fl  { color:#0051ff; }
+    .chev { display:flex; align-items:center; margin-inline-start:8px; flex-shrink:0; transition:transform .2s; }
+    .chev.open { transform:rotate(180deg); }
+    .dd-val {
+      flex:1; font-size:14px; font-weight:500; color:#181b23;
+      text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .dd-btn.float .dd-val { padding-top:14px; }
+    .dd-menu {
+      position:absolute; top:48px; left:0; right:0; z-index:50;
+      background:#fff; border:1.5px solid #eef0f5; border-top:none;
+      border-radius:0 0 10px 10px;
+      box-shadow:0 4px 16px rgba(0,0,0,.06);
+      max-height:240px; overflow-y:auto;
+    }
+    .dd-opt {
+      display:flex; align-items:center; gap:10px; padding:12px 14px;
+      font-size:14px; color:#2c333c; cursor:pointer; transition:background .1s;
+      border-bottom:1px solid #f8f9fb; direction:rtl;
+    }
+    .dd-opt:last-child { border-bottom:none; }
+    .dd-opt:hover    { background:#f3f6fc; }
+    .dd-opt.selected { background:#ebf4ff; }
+    .dd-search {
+      width:100%; border:none; outline:none; background:transparent;
+      font-family:'Rubik',sans-serif; font-size:14px; font-weight:500;
+      color:#181b23; caret-color:#0051ff; text-align:right; direction:rtl; padding-top:14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const ChevSvg = ({ active }) => (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M5 7.5L10 12.5L15 7.5" stroke={active ? "#0051ff" : "#c7cbd7"} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    );
+
+    const CurrSvg = () => (
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <text x="0" y="12" fontFamily="Rubik" fontSize="13" fontWeight="600" fill="#2c333c">﷼</text>
+      </svg>
+    );
+
+    // ── TextInput ──────────────────────────────────────────────────────────────
+    function TextInput({ label = "العنوان هنا", helpText, errorText, currency, disabled, preValue }) {
+      const [val, setVal] = useState(preValue || "");
+      const [focused, setFocused] = useState(false);
+      const ref = useRef(null);
+      const hasErr = !!errorText;
+      const isFloat = focused || val.length > 0;
+      let cls = "input-box";
+      if (hasErr) cls += " error";
+      else if (focused) cls += " active";
+      if (isFloat) cls += " float";
+
+      return (
+        <div className="input-wrap">
+          <div className={cls} onClick={() => !disabled && ref.current?.focus()}>
+            {currency && <span className="curr"><CurrSvg /></span>}
+            <div style={{ position:"relative", flex:1, height:"100%", display:"flex", alignItems:"center" }}>
+              <span className="fl">{label}</span>
+              <input ref={ref} type="text" disabled={disabled} value={val}
+                onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+                onChange={e => setVal(e.target.value)} />
+            </div>
+          </div>
+          {helpText && !hasErr && <span className="help-text">{helpText}</span>}
+          {hasErr && <span className="error-text">{errorText}</span>}
+        </div>
+      );
+    }
+
+    // ── ParagraphInput ─────────────────────────────────────────────────────────
+    function ParagraphInput({ placeholder = "وصف المعاملة...", maxLength = 500 }) {
+      const [val, setVal] = useState("");
+      const [focused, setFocused] = useState(false);
+      const ref = useRef(null);
+      return (
+        <div className="input-wrap">
+          <div className={`para-box${focused ? " active" : ""}`} onClick={() => ref.current?.focus()}>
+            <textarea ref={ref} value={val} placeholder={placeholder}
+              onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+              onChange={e => setVal(e.target.value.slice(0, maxLength))} />
+          </div>
+          <span className="char-count">{maxLength} / {val.length}</span>
+        </div>
+      );
+    }
+
+    // ── DropdownInput ──────────────────────────────────────────────────────────
+    function DropdownInput({ label = "اختر البنك", options = [], searchable, errorText, helpText }) {
+      const [open, setOpen] = useState(false);
+      const [sel, setSel] = useState(null);
+      const [sq, setSq] = useState("");
+      const ref = useRef(null);
+      const sRef = useRef(null);
+      const norm = options.map(o => typeof o === "string" ? { label:o, value:o } : o);
+      const filtered = searchable && sq ? norm.filter(o => o.label.includes(sq)) : norm;
+      const selOpt = norm.find(o => o.value === sel);
+      const isFilled = !!selOpt;
+      const isFloat = open || isFilled;
+      const hasErr = !!errorText;
+
+      useEffect(() => {
+        const h = e => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setSq(""); } };
+        document.addEventListener("mousedown", h);
+        return () => document.removeEventListener("mousedown", h);
+      }, []);
+
+      useEffect(() => { if (open && searchable && sRef.current) sRef.current.focus(); }, [open, searchable]);
+
+      let btnCls = "dd-btn";
+      if (open) btnCls += " open float";
+      else if (isFilled) btnCls += " sel float";
+      if (hasErr && !open && !isFilled) btnCls += " error";
+
+      return (
+        <div className="dd-wrap" ref={ref}>
+          <div className={btnCls} onClick={() => setOpen(v => !v)}>
+            <div style={{ flex:1, position:"relative", height:"100%", display:"flex", alignItems:"center" }}>
+              <span className="fl">{label}</span>
+              {searchable && open
+                ? <input ref={sRef} type="text" className="dd-search" value={sq}
+                    onChange={e => { e.stopPropagation(); setSq(e.target.value); }}
+                    onClick={e => e.stopPropagation()} />
+                : <span className="dd-val" style={{ color: isFilled ? "#181b23" : "transparent", paddingTop: isFloat ? "14px" : "0" }}>
+                    {selOpt?.label || "\u200e"}
+                  </span>
+              }
+            </div>
+            <span className={`chev${open ? " open" : ""}`}><ChevSvg active={open} /></span>
+          </div>
+          {open && (
+            <div className="dd-menu">
+              {filtered.map((opt, i) => (
+                <div key={i} className={`dd-opt${opt.value === sel ? " selected" : ""}`}
+                  onClick={() => { setSel(opt.value); setOpen(false); setSq(""); }}>
+                  {opt.label}
+                </div>
+              ))}
+            </div>
+          )}
+          {helpText && !hasErr && <span className="help-text">{helpText}</span>}
+          {hasErr && <span className="error-text">{errorText}</span>}
+        </div>
+      );
+    }
+
+    const BANKS = ["البنك الأهلي السعودي","بنك الراجحي","بنك الرياض","البنك العربي الوطني","بنك ساب","بنك البلاد","بنك الجزيرة","بنك الإنماء"];
+
+    function App() {
+      return (
+        <div>
+          {/* Text inputs */}
+          <div className="group">
+            <div className="group-title">Text Input — States</div>
+            <div className="col-3">
+              <TextInput label="الاسم الكامل" helpText="كما يظهر في الهوية الوطنية" />
+              <TextInput label="رقم الحساب" preValue="SA29 0000 0000 0000 0000" />
+              <TextInput label="رقم الهوية" errorText="رقم الهوية غير صحيح" preValue="1234567890" />
+            </div>
+          </div>
+
+          {/* Disabled */}
+          <div className="group">
+            <div className="group-title">Disabled</div>
+            <div className="col-3">
+              <TextInput label="رقم الحساب" preValue="SA29 0000 0000 0000 0000" disabled />
+              <TextInput label="الاسم" disabled />
+              <TextInput label="المبلغ" currency disabled preValue="5,000" />
+            </div>
+          </div>
+
+          {/* Currency */}
+          <div className="group">
+            <div className="group-title">With Currency</div>
+            <div className="col-2">
+              <TextInput label="المبلغ المحول" currency />
+              <TextInput label="الرسوم" currency preValue="25" helpText="يشمل رسوم التحويل" />
+            </div>
+          </div>
+
+          {/* Dropdown */}
+          <div className="group">
+            <div className="group-title">Dropdown</div>
+            <div className="col-2">
+              <DropdownInput label="اختر البنك" options={BANKS} />
+              <DropdownInput label="ابحث عن البنك" options={BANKS} searchable helpText="اكتب اسم البنك للبحث" />
+            </div>
+            <div style={{ marginTop:16 }}>
+              <DropdownInput label="نوع الحساب" options={["حساب جاري","حساب توفير","حساب استثماري"]} errorText="يرجى اختيار نوع الحساب" />
+            </div>
+          </div>
+
+          {/* Paragraph */}
+          <div className="group">
+            <div className="group-title">Paragraph / Textarea</div>
+            <ParagraphInput placeholder="وصف المعاملة أو الغرض من التحويل..." maxLength={300} />
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>

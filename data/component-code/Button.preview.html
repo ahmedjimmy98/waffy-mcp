@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WaFFY — Button Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: #fff;
+      color: #10131d;
+      padding: 32px 40px 60px;
+      direction: rtl;
+    }
+
+    /* ── Guidelines header ─────────────────────────────────── */
+    .guidelines {
+      margin-bottom: 48px;
+    }
+    .guidelines h1 {
+      font-size: 16px; font-weight: 700; margin-bottom: 6px;
+    }
+    .guidelines p {
+      font-size: 14px; color: #555b6a; line-height: 1.6; margin-bottom: 6px;
+    }
+    .guidelines ul {
+      list-style: disc; padding-right: 20px; font-size: 14px; color: #555b6a; line-height: 1.8;
+    }
+    .guidelines ul strong { color: #10131d; }
+
+    /* ── Section ───────────────────────────────────────────── */
+    .section { margin-bottom: 52px; }
+    .section-title {
+      font-size: 24px; font-weight: 700; color: #10131d; margin-bottom: 4px;
+    }
+    .section-sub {
+      font-size: 13px; color: #8e94a3; margin-bottom: 24px; line-height: 1.5;
+    }
+
+    /* ── States grid ───────────────────────────────────────── */
+    .states-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .state-col { display: flex; flex-direction: column; gap: 10px; }
+    .state-label {
+      font-size: 12px; font-weight: 400; color: #8e94a3;
+    }
+
+    /* ── 2-col row (for icons section) ───────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── Base button ───────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; font-family: 'Rubik', sans-serif;
+      font-size: 14px; font-weight: 600;
+      border: none; cursor: pointer; white-space: nowrap;
+      width: 100%; text-align: center;
+      border-radius: 8px;
+      transition: background .15s, color .15s, border-color .15s, box-shadow .15s;
+    }
+
+    /* ── Web height (44px) ─────────────────────────────────── */
+    .btn-web  { height: 44px; padding: 0 20px; }
+    /* ── Mobile height (48px) ──────────────────────────────── */
+    .btn-mob  { height: 48px; padding: 0 20px; }
+
+    /* ── Primary states ────────────────────────────────────── */
+    .btn-primary-default  { background: #0d44ad; color: #fff; }
+    .btn-primary-hover    { background: #1b4de9; color: #fff; }
+    .btn-primary-pressed  { background: #1b4de9; color: transparent; border: none; box-shadow: 0 0 0 4px #c7d7fa; }
+    .btn-primary-disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+
+    /* ── Secondary states ──────────────────────────────────── */
+    .btn-secondary-default  { background: #f3f4f6; color: #1b4de9; border: none; }
+    .btn-secondary-hover    { background: #fff; color: #1b4de9; border: 1.5px solid #c7cbd7; }
+    .btn-secondary-pressed  { background: #fff; color: transparent; border: 1.5px solid #c7cbd7; }
+    .btn-secondary-disabled { background: #f8f9fb; color: #c7cbd7; border: none; cursor: not-allowed; }
+
+    /* ── Tertiary states ───────────────────────────────────── */
+    .btn-tertiary-default  { background: transparent; color: #283743; border: none; }
+    .btn-tertiary-hover    { background: #f8f9fb; color: #283743; border: 1.5px solid #eef0f5; }
+    .btn-tertiary-pressed  { background: transparent; color: transparent; border: none; }
+    .btn-tertiary-disabled { background: transparent; color: #c7cbd7; border: none; cursor: not-allowed; }
+
+    /* ── Dots spinner ──────────────────────────────────────── */
+    .spinner {
+      position: relative; width: 24px; height: 24px; flex-shrink: 0;
+    }
+    .spinner span {
+      position: absolute; top: 50%; left: 50%;
+      width: 3.5px; height: 3.5px; border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      animation: dots-fade .8s linear infinite;
+    }
+    .spinner span:nth-child(1)  { transform: rotate(0deg)   translate(8px) translate(-50%,-50%); animation-delay: 0s; }
+    .spinner span:nth-child(2)  { transform: rotate(45deg)  translate(8px) translate(-50%,-50%); animation-delay: -.7s; }
+    .spinner span:nth-child(3)  { transform: rotate(90deg)  translate(8px) translate(-50%,-50%); animation-delay: -.6s; }
+    .spinner span:nth-child(4)  { transform: rotate(135deg) translate(8px) translate(-50%,-50%); animation-delay: -.5s; }
+    .spinner span:nth-child(5)  { transform: rotate(180deg) translate(8px) translate(-50%,-50%); animation-delay: -.4s; }
+    .spinner span:nth-child(6)  { transform: rotate(225deg) translate(8px) translate(-50%,-50%); animation-delay: -.3s; }
+    .spinner span:nth-child(7)  { transform: rotate(270deg) translate(8px) translate(-50%,-50%); animation-delay: -.2s; }
+    .spinner span:nth-child(8)  { transform: rotate(315deg) translate(8px) translate(-50%,-50%); animation-delay: -.1s; }
+    @keyframes dots-fade {
+      0%   { opacity: 1; }
+      100% { opacity: 0.15; }
+    }
+    .spinner.spinner-dark span { background: rgba(142,148,163,0.9); }
+
+    /* ── Link states ───────────────────────────────────────── */
+    .btn-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none; cursor: pointer;
+      font-family: 'Rubik', sans-serif; font-size: 14px; font-weight: 500;
+      padding: 4px 0; width: auto;
+      border-radius: 0;
+    }
+    .btn-link-default  { color: #0051ff; text-decoration: underline; }
+    .btn-link-hover    { color: #1b4de9; text-decoration: underline; }
+    .btn-link-pressed  { color: #0051ff; text-decoration: underline; }
+    .btn-link-disabled { color: #c7cbd7; text-decoration: line-through; cursor: not-allowed; }
+
+    /* ── Icon button ───────────────────────────────────────── */
+    .icon-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-family: 'Rubik', sans-serif;
+      transition: background .15s, border-color .15s;
+    }
+    .icon-btn-border {
+      width: 36px; height: 36px; border-radius: 8px;
+      border: 1.5px solid #eef0f5; background: #fff;
+      color: #10131d;
+    }
+    .icon-btn-border:hover { border-color: #c7cbd7; background: #f8f9fb; }
+    .icon-btn-no-border {
+      width: 36px; height: 36px; border-radius: 8px;
+      border: none; background: transparent;
+      color: #10131d;
+    }
+    .icon-btn-no-border:hover { background: #f3f4f6; }
+    .icon-btn-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid #c7cbd7; background: #fff;
+      color: #10131d;
+    }
+    .icon-btn-circle:hover { border-color: #8e94a3; background: #f8f9fb; }
+
+    /* Three-dots icon */
+    .dots-icon {
+      display: flex; flex-direction: column; gap: 3px;
+      align-items: center; justify-content: center;
+    }
+    .dots-icon span {
+      width: 3px; height: 3px; border-radius: 50%; background: currentColor;
+    }
+
+    /* ── Divider ───────────────────────────────────────────── */
+    hr { border: none; border-top: 1px solid #eef0f5; margin: 0 0 40px; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Guidelines ─────────────────────────────────────────── -->
+  <div class="guidelines">
+    <h1>Button Sizing Guidelines (Web &amp; Mobile)</h1>
+    <p>We define separate button sizes for web and mobile, differing only in height and minimum width to meet touch target standards. These follow best practices and Apple Human Interface Guidelines for accessibility.</p>
+    <ul>
+      <li><strong>Web</strong>: Min width 44px, min height 44px</li>
+      <li><strong>Mobile</strong>: Min width 48px, min height 48px</li>
+    </ul>
+    <p style="margin-top:8px;">This ensures a consistent and user-friendly experience across devices.</p>
+  </div>
+
+  <!-- ── Primary / Web ──────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Primary / Web</div>
+    <div class="states-row">
+      <div class="state-col">
+        <span class="state-label">Default</span>
+        <button class="btn btn-web btn-primary-default">مشاركة المعاملة</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Hover</span>
+        <button class="btn btn-web btn-primary-hover">مشاركة المعاملة</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Pressed</span>
+        <button class="btn btn-web btn-primary-pressed">
+          <span class="spinner"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Disabled</span>
+        <button class="btn btn-web btn-primary-disabled" disabled>مشاركة المعاملة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Primary / Mobile ───────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Primary / Mobile</div>
+    <div class="states-row">
+      <div class="state-col">
+        <span class="state-label">Default</span>
+        <button class="btn btn-mob btn-primary-default">مشاركة المعاملة</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Hover</span>
+        <button class="btn btn-mob btn-primary-hover">مشاركة المعاملة</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Pressed</span>
+        <button class="btn btn-mob btn-primary-pressed">
+          <span class="spinner"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Disabled</span>
+        <button class="btn btn-mob btn-primary-disabled" disabled>مشاركة المعاملة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── With Icons ─────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">With icons</div>
+    <div class="section-sub">A button may include an icon on the left or right, depending on its function and design context.</div>
+    <div class="two-col">
+      <div class="state-col">
+        <span class="state-label">Left Icon</span>
+        <button class="btn btn-web btn-primary-default" style="justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          التـالي
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Right Icon</span>
+        <button class="btn btn-web btn-primary-default" style="justify-content:center;">
+          مشاركة المعاملة
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="4" cy="8" r="1.5" fill="currentColor"/>
+            <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
+            <circle cx="12" cy="8" r="1.5" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Secondary ──────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Secondary</div>
+    <div class="states-row">
+      <div class="state-col">
+        <span class="state-label">Default</span>
+        <button class="btn btn-web btn-secondary-default">التصعيد لـ وقي</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Hover</span>
+        <button class="btn btn-web btn-secondary-hover">التصعيد لـ وقي</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Pressed</span>
+        <button class="btn btn-web btn-secondary-pressed">
+          <span class="spinner spinner-dark"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Disabled</span>
+        <button class="btn btn-web btn-secondary-disabled" disabled>التصعيد لـ وقي</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Tertiary ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Tertiary</div>
+    <div class="states-row">
+      <div class="state-col">
+        <span class="state-label">Default</span>
+        <button class="btn btn-web btn-tertiary-default">التصعيد لـ وقي</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Hover</span>
+        <button class="btn btn-web btn-tertiary-hover">التصعيد لـ وقي</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Pressed</span>
+        <button class="btn btn-web btn-tertiary-pressed">
+          <span class="spinner spinner-dark"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Disabled</span>
+        <button class="btn btn-web btn-tertiary-disabled" disabled>التصعيد لـ وقي</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Link ───────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">Link</div>
+    <div class="states-row">
+      <div class="state-col">
+        <span class="state-label">Default</span>
+        <button class="btn-link btn-link-default">أدخل رقم الهاتف</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Hover</span>
+        <button class="btn-link btn-link-hover">أدخل رقم الهاتف</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Pressed</span>
+        <button class="btn-link btn-link-pressed">أدخل رقم الهاتف</button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Disabled</span>
+        <button class="btn-link btn-link-disabled" disabled>أدخل رقم الهاتف</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── IconButton ─────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-title">IconButton</div>
+
+    <!-- Default row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:32px;">
+      <div class="state-col">
+        <span class="state-label">With border</span>
+        <button class="icon-btn icon-btn-border">
+          <div class="dots-icon"><span></span><span></span><span></span></div>
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">without border</span>
+        <button class="icon-btn icon-btn-no-border">
+          <div class="dots-icon"><span></span><span></span><span></span></div>
+        </button>
+      </div>
+      <div class="state-col">
+        <span class="state-label">Circled</span>
+        <button class="icon-btn icon-btn-circle">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Hover row -->
+    <div style="margin-bottom:10px;">
+      <span class="state-label">Hover State</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+      <button class="icon-btn icon-btn-border" style="border-color:#c7cbd7;background:#f8f9fb;">
+        <div class="dots-icon"><span></span><span></span><span></span></div>
+      </button>
+      <button class="icon-btn icon-btn-no-border" style="background:#f3f4f6;">
+        <div class="dots-icon"><span></span><span></span><span></span></div>
+      </button>
+      <button class="icon-btn icon-btn-circle" style="border-color:#8e94a3;background:#f8f9fb;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+</body>
+</html>

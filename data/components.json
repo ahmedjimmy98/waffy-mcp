@@ -1,14 +1,788 @@
-{"components":[
-{"name":"Button"},
-{"name":"InputField"},
-{"name":"Status"},
-{"name":"PaymentDetails"},
-{"name":"Stepper"},
-{"name":"UserImage"},
-{"name":"DiscountCodeInput"},
-{"name":"Financial"},
-{"name":"StatusDialog"},
-{"name":"Icons"},
-{"name":"MetaData"},
-{"name":"IconButton"}
-]}
+{
+  "components": [
+    {
+      "name": "Logo",
+      "category": "Foundations",
+      "codeFile": "Logo.jsx",
+      "description": "Official WaFFY logo component. Two language variants (Arabic mark, English wordmark) × two color variants (primary blue, white). Always use the provided SVG — never recreate or approximate the logo.",
+      "variants": [
+        "ar-primary",
+        "ar-white",
+        "en-primary",
+        "en-white"
+      ],
+      "props": [
+        {
+          "name": "lang",
+          "type": "enum",
+          "options": [
+            "ar",
+            "en"
+          ],
+          "default": "ar",
+          "description": "ar = Arabic mark (60×36), en = English wordmark (135×36)"
+        },
+        {
+          "name": "variant",
+          "type": "enum",
+          "options": [
+            "primary",
+            "white"
+          ],
+          "default": "primary",
+          "description": "primary = #0D44AD on light bg · white = #ffffff on dark/colored bg"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "description": "Rendered width in px. Height scales automatically to preserve aspect ratio. Defaults to native SVG width (AR: 60px, EN: 135px)."
+        },
+        {
+          "name": "className",
+          "type": "string",
+          "description": "Extra CSS class for layout control."
+        },
+        {
+          "name": "style",
+          "type": "object",
+          "description": "Inline styles. Use width:100%;height:auto for fluid/responsive sizing."
+        }
+      ],
+      "sourceFiles": {
+        "ar-primary": "logo-ar-primary.svg",
+        "ar-white": "logo-ar-white.svg",
+        "en-primary": "logo-en-primary.svg",
+        "en-white": "logo-en-white.svg"
+      },
+      "design": {
+        "arViewBox": "0 0 60 36",
+        "enViewBox": "0 0 135 36",
+        "arAspectRatio": "60:36 (5:3)",
+        "enAspectRatio": "135:36 (15:4)",
+        "primaryColor": "#0D44AD",
+        "whiteColor": "#ffffff",
+        "minWidthAR": "48px",
+        "minWidthEN": "100px",
+        "navbarUsage": "60px wide (AR) · 120px wide (EN)"
+      },
+      "guidelines": "Always use the exact SVG paths — never redraw, approximate, or rasterize the logo. Use 'primary' variant on white or light backgrounds (#f8f9fb and above). Use 'white' variant on dark backgrounds (#283743, #10131d) or on primary blue (#0051ff, #0d44ad). Never place the primary variant on a colored background that reduces contrast. Do not add drop shadows, outlines, or effects. Maintain clear space of at least 16px on all sides at standard sizes. Minimum display width: AR 48px, EN 100px. For the Navbar: use AR logo by default, switch to EN when lang='en'. Use white variant in the authenticated dark navbar, primary variant in the guest/light navbar."
+    },
+    {
+      "name": "Button",
+      "category": "Actions",
+      "figmaFrame": "1:1171",
+      "description": "Primary interactive element for user actions. Supports multiple variants and sizes.",
+      "variants": [
+        "primary",
+        "secondary",
+        "ghost",
+        "danger"
+      ],
+      "sizes": [
+        "sm",
+        "md",
+        "lg"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "options": [
+            "primary",
+            "secondary",
+            "ghost",
+            "danger"
+          ],
+          "default": "primary"
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "options": [
+            "sm",
+            "md",
+            "lg"
+          ],
+          "default": "md"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "loading",
+          "type": "boolean",
+          "default": false
+        },
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "icon",
+          "type": "string"
+        },
+        {
+          "name": "iconPosition",
+          "type": "enum",
+          "options": [
+            "start",
+            "end"
+          ],
+          "default": "start"
+        }
+      ],
+      "guidelines": "Use primary for the main CTA. Use secondary for supporting actions. Use ghost for low-emphasis actions. Use danger for destructive actions. Always pair with an icon for icon-only buttons.",
+      "previewFile": "Button.preview.html",
+      "previewHeight": 820
+    },
+    {
+      "name": "IconButton",
+      "category": "Actions",
+      "description": "Compact button displaying only an icon. Use when space is limited.",
+      "variants": [
+        "primary",
+        "secondary",
+        "ghost"
+      ],
+      "sizes": [
+        "sm",
+        "md",
+        "lg"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "options": [
+            "primary",
+            "secondary",
+            "ghost"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "options": [
+            "sm",
+            "md",
+            "lg"
+          ]
+        },
+        {
+          "name": "icon",
+          "type": "string"
+        },
+        {
+          "name": "disabled",
+          "type": "boolean"
+        },
+        {
+          "name": "ariaLabel",
+          "type": "string"
+        }
+      ],
+      "guidelines": "Always provide an ariaLabel for accessibility. Do not use without a tooltip in complex UIs.",
+      "previewFile": "Button.preview.html",
+      "previewHeight": 820
+    },
+    {
+      "name": "InputField",
+      "category": "Forms",
+      "figmaFrame": "1:1292",
+      "codeFile": "InputField.jsx",
+      "description": "Three input variants: TextInput (single-line with floating label), ParagraphInput (multiline textarea), DropdownInput (select with search). All RTL, all floating-label, pixel-perfect Figma match.",
+      "subcomponents": {
+        "TextInput": {
+          "import": "import { TextInput } from './InputField'",
+          "props": [
+            {
+              "name": "label",
+              "type": "string",
+              "default": "العنوان هنا",
+              "description": "Floating label text"
+            },
+            {
+              "name": "helpText",
+              "type": "string",
+              "description": "Helper text shown below the input"
+            },
+            {
+              "name": "errorText",
+              "type": "string",
+              "description": "Error message — triggers red border state"
+            },
+            {
+              "name": "currency",
+              "type": "boolean",
+              "default": false,
+              "description": "Shows SAR currency icon, restricts input to numbers"
+            },
+            {
+              "name": "disabled",
+              "type": "boolean",
+              "default": false
+            },
+            {
+              "name": "value",
+              "type": "string",
+              "description": "Controlled value"
+            },
+            {
+              "name": "onChange",
+              "type": "function",
+              "description": "Callback (value: string) => void"
+            }
+          ]
+        },
+        "ParagraphInput": {
+          "import": "import { ParagraphInput } from './InputField'",
+          "props": [
+            {
+              "name": "placeholder",
+              "type": "string",
+              "default": "وصف المعاملة .."
+            },
+            {
+              "name": "maxLength",
+              "type": "number",
+              "default": 500,
+              "description": "Shows char counter below"
+            },
+            {
+              "name": "value",
+              "type": "string"
+            },
+            {
+              "name": "onChange",
+              "type": "function"
+            }
+          ]
+        },
+        "DropdownInput": {
+          "import": "import { DropdownInput } from './InputField'",
+          "props": [
+            {
+              "name": "label",
+              "type": "string",
+              "default": "العنوان هنا"
+            },
+            {
+              "name": "options",
+              "type": "array",
+              "description": "Array of { label, value } or plain strings"
+            },
+            {
+              "name": "searchable",
+              "type": "boolean",
+              "default": false,
+              "description": "Enables search filter inside open menu"
+            },
+            {
+              "name": "withLeftIcon",
+              "type": "boolean",
+              "default": false
+            },
+            {
+              "name": "withRightIcon",
+              "type": "boolean",
+              "default": false
+            },
+            {
+              "name": "helpText",
+              "type": "string"
+            },
+            {
+              "name": "errorText",
+              "type": "string"
+            },
+            {
+              "name": "value",
+              "type": "string"
+            },
+            {
+              "name": "onChange",
+              "type": "function"
+            }
+          ]
+        }
+      },
+      "states": [
+        "default",
+        "hover",
+        "active (focused)",
+        "filled",
+        "error"
+      ],
+      "design": {
+        "height": "48px",
+        "borderRadius": "10px",
+        "borderDefault": "1.5px solid #eef0f5",
+        "borderHover": "#c7cbd7",
+        "borderActive": "#84b8ff + shadow 0 0 0 2px #ebf4ff",
+        "borderError": "#e32a34",
+        "floatingLabelDefault": "14px Regular #8e94a3 centered",
+        "floatingLabelActive": "10px top:7px #0051ff",
+        "font": "Rubik 14px Medium #181b23",
+        "helpText": "10px #8e94a3 right-aligned",
+        "errorText": "10px #e32a34 right-aligned",
+        "direction": "RTL"
+      },
+      "guidelines": "All inputs are RTL and use floating labels — no separate label element needed above the field. Use helpText for guidance, errorText to show validation errors (automatically turns border red). Currency variant accepts only numeric input and shows the SAR icon. DropdownInput closes on outside click; searchable=true enables filtering.",
+      "previewFile": "InputField.preview.html",
+      "previewHeight": 780
+    },
+    {
+      "name": "DiscountCodeInput",
+      "category": "Forms",
+      "description": "Specialized input for coupon/discount code entry. Includes apply action inline.",
+      "props": [
+        {
+          "name": "value",
+          "type": "string"
+        },
+        {
+          "name": "placeholder",
+          "type": "string"
+        },
+        {
+          "name": "loading",
+          "type": "boolean"
+        },
+        {
+          "name": "error",
+          "type": "string"
+        },
+        {
+          "name": "success",
+          "type": "string"
+        }
+      ],
+      "guidelines": "Show success state with success.default (#00897b) and error with error.default (#e32a34). Disable input after successful code application.",
+      "previewFile": "InputField.preview.html",
+      "previewHeight": 780
+    },
+    {
+      "name": "Status",
+      "category": "Feedback",
+      "description": "Status badge/chip for displaying entity state such as order status, payment state, etc.",
+      "variants": [
+        "success",
+        "warning",
+        "error",
+        "info",
+        "neutral",
+        "primary"
+      ],
+      "sizes": [
+        "sm",
+        "md"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "options": [
+            "success",
+            "warning",
+            "error",
+            "info",
+            "neutral",
+            "primary"
+          ]
+        },
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "options": [
+            "sm",
+            "md"
+          ]
+        }
+      ],
+      "guidelines": "Use semantic colors: success (#00897b), warning (#ffc107), error (#e32a34), info (#2fbcfe), neutral (#8e94a3), primary (#0051ff)."
+    },
+    {
+      "name": "StatusDialog",
+      "category": "Feedback",
+      "description": "Full-screen or modal dialog for conveying operation result — success, error, or loading.",
+      "variants": [
+        "success",
+        "error",
+        "loading"
+      ],
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "options": [
+            "success",
+            "error",
+            "loading"
+          ]
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "primaryAction",
+          "type": "string"
+        },
+        {
+          "name": "secondaryAction",
+          "type": "string"
+        }
+      ],
+      "guidelines": "Use success for confirmed transactions, error for failures, loading for pending async operations. Keep title short (headingSm) and description in paragraphMd."
+    },
+    {
+      "name": "StatusStepper",
+      "category": "Navigation",
+      "codeFile": "StatusStepper.jsx",
+      "previewFile": "StatusStepper.preview.html",
+      "description": "Contract status timeline. Shows 3–4 steps (Payment → Execution → Approval → Completion). Supports pending/active/done/escalated/skipped states, escalation sub-labels, Haraj label variant, optional Step 3 (Milestone contracts), and bilingual EN/AR with RTL layout.",
+      "props": [
+        {
+          "name": "activeStep",
+          "type": "number",
+          "default": 1,
+          "description": "Current active step (1–4). Pass 5 for fully completed."
+        },
+        {
+          "name": "showStep3",
+          "type": "boolean",
+          "default": true,
+          "description": "Show Inspection/Approval step. Set false for MILESTONE contracts where isInspectable=false. When false, Step 4 number becomes 3."
+        },
+        {
+          "name": "isHaraj",
+          "type": "boolean",
+          "default": false,
+          "description": "Changes Step 4 label from 'Completion' to 'Money Transfer'."
+        },
+        {
+          "name": "escalation",
+          "type": "object",
+          "default": "{ delivery:false, inspection:false, resolved:false, skipped:false }",
+          "description": "delivery: escalation on step 2. inspection: escalation on step 3. resolved: escalation closed. skipped: step 3 skipped via admin-resolved delivery escalation."
+        },
+        {
+          "name": "labels",
+          "type": "object",
+          "description": "Override step label strings. Keys: step1, step2, step3, step4, step4Haraj. Use for Arabic: { step1:'الدفع', step2:'التنفيذ', step3:'الموافقة', step4:'الإكمال', step4Haraj:'تحويل المبلغ' }"
+        },
+        {
+          "name": "subLabels",
+          "type": "object",
+          "description": "Override escalation sub-label strings. Keys: arbitrationInProgress, arbitrated, skip."
+        }
+      ],
+      "stepStates": {
+        "pending": {
+          "circleBg": "#F8F9F9",
+          "circleNum": "#9FA6AB",
+          "label": "Rubik 400 12px #9FA6AB"
+        },
+        "active": {
+          "circleBg": "#283743",
+          "circleNum": "#ffffff",
+          "label": "Rubik 600 14px #283743 lh21px"
+        },
+        "done": {
+          "circleBg": "#44C16E",
+          "circleNum": "#ffffff",
+          "label": "Rubik 400 14px #44C16E"
+        },
+        "escalated": {
+          "circleBg": "#D18B49",
+          "circleNum": "#ffffff",
+          "label": "Rubik 600 14px #283743",
+          "subLabel": "Rubik 400 10px #D18B49 lh15px"
+        },
+        "skipped": {
+          "circleBg": "#D18B49",
+          "circleNum": "-",
+          "label": "line-through #9FA6AB"
+        }
+      },
+      "design": {
+        "containerPadding": "21px 42px (desktop) · 21px 24px (≤600px) · 21px 0 (≤450px)",
+        "containerMinHeight": "105px",
+        "containerBorderBottom": "1px solid #F3F4F5",
+        "circleSize": "23.63 × 23.63px",
+        "connectorHeight": "2px",
+        "connectorColor": "#F3F3F3",
+        "connectorDoneColor": "#44C16E opacity 0.3",
+        "connectorMarginTop": "11.98px",
+        "stepMargin": "0 5px",
+        "lastStepMarginInlineStart": "-10px",
+        "font": "Rubik"
+      },
+      "scenarios": {
+        "step1": "activeStep=1 — awaiting payment",
+        "step2": "activeStep=2 — execution in progress",
+        "step3": "activeStep=3 — inspection/approval active",
+        "step4": "activeStep=4 — awaiting completion",
+        "completed": "activeStep=5 — fully done",
+        "escalated": "activeStep=2, escalation.delivery=true",
+        "milestone": "showStep3=false — 3 steps only"
+      },
+      "guidelines": "Always set activeStep from the contract status enum. Use showStep3=false only for MILESTONE contracts with isInspectable=false. Escalation sub-labels appear below the step label in #D18B49. Wrap in <div dir='rtl'> and pass Arabic labels for RTL layouts. The last step automatically gets a negative margin-inline-start to visually anchor the timeline."
+    },
+    {
+      "name": "UserImage",
+      "category": "Data Display",
+      "description": "Avatar component for user or entity image display. Falls back to initials.",
+      "sizes": [
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl"
+      ],
+      "props": [
+        {
+          "name": "src",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "options": [
+            "xs",
+            "sm",
+            "md",
+            "lg",
+            "xl"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "enum",
+          "options": [
+            "circle",
+            "square"
+          ]
+        }
+      ],
+      "guidelines": "Fallback initials use paragraphMdM (16px Bold). Background uses primary.200 (#d3e5ff), text uses primary.900 (#0d44ad)."
+    },
+    {
+      "name": "Financial",
+      "category": "Data Display",
+      "description": "Component for displaying monetary values, prices, or financial summaries.",
+      "props": [
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "options": [
+            "sm",
+            "md",
+            "lg"
+          ]
+        },
+        {
+          "name": "variant",
+          "type": "enum",
+          "options": [
+            "default",
+            "positive",
+            "negative"
+          ]
+        }
+      ],
+      "guidelines": "Positive values use success.default (#00897b), negative use error.default (#e32a34). Use Rubik Bold for the amount figure."
+    },
+    {
+      "name": "PaymentDetails",
+      "category": "Data Display",
+      "description": "Structured display of payment breakdown — subtotal, discounts, fees, total.",
+      "props": [
+        {
+          "name": "lineItems",
+          "type": "string"
+        },
+        {
+          "name": "total",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        }
+      ],
+      "guidelines": "Total row uses headingSm (24px Bold). Line items use paragraphMd (16px Regular). Dividers use neutral.200 (#eef0f5)."
+    },
+    {
+      "name": "MetaData",
+      "category": "Data Display",
+      "description": "Key-value pair display for entity metadata such as order ID, date, or reference number.",
+      "props": [
+        {
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "string"
+        },
+        {
+          "name": "copyable",
+          "type": "boolean"
+        }
+      ],
+      "guidelines": "Label uses labelSm (14px Bold, neutral.400). Value uses paragraphMd (16px Regular, neutral.900)."
+    },
+    {
+      "name": "Icons",
+      "category": "Foundations",
+      "figmaFrame": "1:807",
+      "description": "Icon library for the WaFFY design system.",
+      "guidelines": "Icons are used at 16px, 20px, and 24px sizes. Default color inherits from parent text color. Use neutral.900 for default, primary.700 for interactive, neutral.400 for disabled."
+    },
+    {
+      "name": "Navbar",
+      "category": "Navigation",
+      "codeFile": "Navbar.jsx",
+      "previewFile": "Navbar.preview.html",
+      "description": "Application navigation bar. Desktop: dark/light variants with logo, nav items (Transactions, Balance), create-contract CTA, notification bell with panel, and profile box. Mobile: top bar (guest) or bottom footer nav with 5 tabs (Home, Transactions, +, Wallet, Profile). Fully bilingual EN/AR with RTL support.",
+      "props": [
+        {
+          "name": "isAuthenticated",
+          "type": "boolean",
+          "default": true,
+          "description": "Authenticated mode: dark navbar + nav items + profile. Guest mode: light navbar + lang pill + contact us button."
+        },
+        {
+          "name": "lang",
+          "type": "enum",
+          "options": [
+            "en",
+            "ar"
+          ],
+          "default": "en",
+          "description": "Active language. 'ar' switches to RTL layout and Arabic labels."
+        },
+        {
+          "name": "userName",
+          "type": "string",
+          "description": "Full name shown in profile box (first two words used)."
+        },
+        {
+          "name": "userPhone",
+          "type": "string",
+          "description": "Phone number shown in profile box. +966 prefix formatted to 0xxx."
+        },
+        {
+          "name": "userAvatarUrl",
+          "type": "string",
+          "description": "Profile photo URL. Falls back to placeholder SVG if empty."
+        },
+        {
+          "name": "notifications",
+          "type": "array",
+          "description": "Array of { text, time, unread } notification objects."
+        },
+        {
+          "name": "hasNotifications",
+          "type": "boolean",
+          "default": true,
+          "description": "Controls unseen dot visibility on notification bell."
+        },
+        {
+          "name": "activeNav",
+          "type": "number",
+          "default": 0,
+          "description": "Active desktop nav item index: 0 = Transactions, 1 = Balance."
+        },
+        {
+          "name": "activeFooter",
+          "type": "number",
+          "default": 1,
+          "description": "Active mobile footer tab: 0=Home, 1=Transactions, 3=Wallet, 4=Profile."
+        },
+        {
+          "name": "labels",
+          "type": "object",
+          "description": "Override label strings. Keys: contracts, wallet, create, contact, langSwitch, notifications, markRead, home, footerContracts, footerWallet, footerProfile."
+        },
+        {
+          "name": "onCreateContract",
+          "type": "function",
+          "description": "Callback for 'Start new transaction' button."
+        },
+        {
+          "name": "onNavSelect",
+          "type": "function",
+          "description": "Callback (index: number) => void for desktop nav item selection."
+        },
+        {
+          "name": "onFooterSelect",
+          "type": "function",
+          "description": "Callback (index: number) => void for mobile footer tab selection."
+        }
+      ],
+      "variants": [
+        "desktop-auth",
+        "desktop-guest",
+        "mobile-auth",
+        "mobile-guest"
+      ],
+      "design": {
+        "desktopHeight": "68px",
+        "mobileFooterHeight": "88px",
+        "darkBg": "#283743",
+        "lightBg": "transparent / #fff",
+        "logoSize": "3.75rem × 2.25rem",
+        "navButtonIndicator": "2px bottom border #fff (active) or #0051ff (light mode)",
+        "createContractBtn": "pill, #0051ff bg, white text, 40px height",
+        "notificationBox": "40×40px dark bg (#283743), white bell icon, 8px unseen dot (#639FFB)",
+        "profileBox": "40×40 avatar + name (Rubik 14px #fff) + phone (Rubik 12px #8E94A3)",
+        "footerPlusBtnBg": "#078DE7 with 0 4px 12px rgba shadow",
+        "font": "Rubik"
+      },
+      "svgIcons": [
+        "logo-white-ar",
+        "logo-white-en",
+        "logo-blue-ar",
+        "logo-blue-en",
+        "icon-notification",
+        "icon-language",
+        "icon-whatsapp",
+        "icon-contracts-nav",
+        "icon-wallet-nav",
+        "icon-home",
+        "icon-home-active",
+        "icon-contracts",
+        "icon-contracts-active",
+        "icon-balance",
+        "icon-balance-active",
+        "icon-profile",
+        "icon-profile-active"
+      ],
+      "guidelines": "Use navbar--dark class (authenticated) and navbar--light class (guest). Desktop nav uses data-selected attribute for active state. Notification panel pops in from top-right with popIn animation. Mobile footer tab 2 (center) is always the '+' create button — not selectable. Wrap in dir='rtl' or set document.documentElement.dir for AR layout. Logo variant switches between white (auth) and blue (guest), and AR/EN pairs automatically based on lang."
+    }
+  ]
+}

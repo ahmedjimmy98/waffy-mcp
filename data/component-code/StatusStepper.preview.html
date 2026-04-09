@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StatusStepper — Designer Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Rubik', sans-serif;
+      background: #F3F4F5;
+      padding: 40px 24px;
+      min-height: 100vh;
+    }
+    p { margin: 0; }
+
+    /* ============================================================
+       DESIGN TOKENS  (sourced from _colors.scss & _mixins.scss)
+    ============================================================ */
+    :root {
+      --white:           #ffffff;
+      --black:           #10212E;
+      --g900:            #283743;
+      --g800:            #404D58;
+      --g700:            #58646D;
+      --g600:            #707A82;
+      --g500:            #879096;
+      --g400:            #9FA6AB;
+      --g200:            #CFD3D5;
+      --g100:            #E7E9EA;
+      --g50:             #F3F4F5;
+
+      --primary:         #078DE7;
+      --done:            #44C16E;          /* completedBg */
+      --abriviation:     #D18B49;          /* escalatedBg */
+      --stepperDisabled: #F8F9F9;          /* default circle bg */
+      --lineBorder:      #F3F3F3;          /* connector line */
+
+      /* Step state colours — easy to change here */
+      --color-pending-bg:    var(--stepperDisabled);
+      --color-pending-num:   var(--g400);
+      --color-pending-label: var(--g400);
+
+      --color-active-bg:     var(--g900);
+      --color-active-num:    var(--white);
+      --color-active-label:  var(--g900);  /* input2: fw600 14px */
+
+      --color-done-bg:       var(--done);
+      --color-done-num:      var(--white);
+      --color-done-label:    var(--done);  /* p4 style */
+
+      --color-escalated-bg:  var(--abriviation);
+      --color-escalated-num: var(--white);
+      --color-escalated-label: var(--g900);
+
+      --connector-color:     var(--lineBorder);
+      --container-border:    var(--g50);
+    }
+
+    /* ============================================================
+       PREVIEW SHELL
+    ============================================================ */
+    .preview-shell {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .preview-title {
+      font-family: 'Rubik', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--g500);
+      margin-bottom: 8px;
+    }
+    .preview-card {
+      background: var(--white);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      margin-bottom: 32px;
+    }
+    .preview-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--g400);
+      padding: 10px 42px 0;
+    }
+
+    /* ============================================================
+       STEPPER CONTAINER  (matches .container in statusStepper.module.scss)
+    ============================================================ */
+    .stepper-container {
+      width: 100%;
+      min-height: 105px;
+      border-bottom: 1px solid var(--g50);
+      padding: 21px 42px;
+    }
+
+    /* ============================================================
+       TIMELINE ROW  (.time_line)
+    ============================================================ */
+    .time-line {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    /* ============================================================
+       CONNECTOR LINE  (.line)
+    ============================================================ */
+    .line {
+      flex-grow: 1;
+      height: 2px;
+      background-color: var(--connector-color);
+      transition: background-color 0.3s ease;
+      margin-top: 11.98px;
+      /* tinted line variant for "passed" connector */
+    }
+    .line--done {
+      background-color: var(--done);
+      opacity: 0.3;
+    }
+
+    /* ============================================================
+       STEP WRAPPER  (.step)
+    ============================================================ */
+    .step {
+      margin: 0 5px;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    }
+    .step--last {
+      margin-inline-start: -10px;
+    }
+
+    /* ============================================================
+       STEP CIRCLE  (.numbering)
+    ============================================================ */
+    .numbering {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--color-pending-bg);
+      width: 23.63px;
+      height: 23.63px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .numbering__text {
+      font-family: 'Rubik', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem; /* stepperText mixin */
+      color: var(--color-pending-num);
+    }
+
+    /* Circle state modifiers */
+    .numbering--active   { background-color: var(--color-active-bg); }
+    .numbering--done     { background-color: var(--color-done-bg); }
+    .numbering--escalated{ background-color: var(--color-escalated-bg); }
+
+    .numbering--active   .numbering__text,
+    .numbering--done     .numbering__text,
+    .numbering--escalated .numbering__text { color: var(--white); }
+
+    /* ============================================================
+       STEP LABEL  (.status)
+    ============================================================ */
+    .status {
+      font-family: 'Rubik', sans-serif;
+      font-weight: 400;
+      font-size: 0.75rem; /* hint mixin */
+      color: var(--color-pending-label);
+      margin: 9px 0 0 0;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* Active state: input2 mixin (fw600, 14px) + g900 color */
+    .status--active {
+      color: var(--color-active-label);
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 21px;
+    }
+    /* Completed state: p4 mixin (fw400, 14px) + done color */
+    .status--done {
+      color: var(--color-done-label);
+      font-weight: 400;
+      font-size: 0.875rem;
+      line-height: normal;
+    }
+    /* Escalated state: same as active label color */
+    .status--escalated {
+      color: var(--color-active-label);
+      font-weight: 600;
+      font-size: 14px;
+    }
+    /* Skipped (line-through) */
+    .status--skipped {
+      text-decoration: line-through;
+      color: var(--color-pending-label);
+    }
+
+    /* ============================================================
+       SUB-LABEL  (.step_label — date mixin)
+    ============================================================ */
+    .step-label {
+      font-family: 'Rubik', sans-serif;
+      font-size: 10px;
+      font-weight: 400;
+      line-height: 15px;
+      color: var(--abriviation);
+      margin-top: 3px;
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    /* ============================================================
+       SCENARIO SWITCHER UI (preview-only chrome)
+    ============================================================ */
+    .scenario-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .scenario-bar__label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--g600);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .scenario-btn {
+      font-family: 'Rubik', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--g100);
+      background: var(--white);
+      color: var(--g700);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .scenario-btn:hover  { border-color: var(--g400); color: var(--g900); }
+    .scenario-btn.active { border-color: var(--g900); background: var(--g900); color: var(--white); }
+
+    /* RTL toggle */
+    .rtl-toggle {
+      margin-left: auto;
+      font-family: 'Rubik', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--primary);
+      background: transparent;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       ANNOTATION PANEL (preview-only)
+    ============================================================ */
+    .annotation {
+      background: var(--white);
+      border-radius: 10px;
+      border: 1px solid var(--g100);
+      padding: 16px 20px;
+      margin-top: 16px;
+    }
+    .annotation h3 {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--g600);
+      margin-bottom: 10px;
+    }
+    .annotation table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .annotation td {
+      padding: 4px 8px 4px 0;
+      color: var(--g700);
+      vertical-align: top;
+    }
+    .annotation td:first-child {
+      font-weight: 600;
+      color: var(--g900);
+      white-space: nowrap;
+      width: 180px;
+    }
+    .swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<div class="preview-shell" id="previewShell">
+
+  <!-- ============================================================
+       SCENARIO SWITCHER
+  ============================================================ -->
+  <div class="scenario-bar">
+    <span class="scenario-bar__label" id="scenarioBarLabel">Scenario:</span>
+    <button class="scenario-btn" onclick="applyScenario('step1')"      id="btn-step1">Step 1 — Awaiting Payment</button>
+    <button class="scenario-btn active" onclick="applyScenario('step2')" id="btn-step2">Step 2 — Execution (active)</button>
+    <button class="scenario-btn" onclick="applyScenario('step3')"      id="btn-step3">Step 3 — Inspection (active)</button>
+    <button class="scenario-btn" onclick="applyScenario('step4')"      id="btn-step4">Step 4 — Completion</button>
+    <button class="scenario-btn" onclick="applyScenario('escalated')"  id="btn-escalated">Escalation</button>
+    <button class="scenario-btn" onclick="applyScenario('completed')"  id="btn-completed">Fully Completed</button>
+    <button class="scenario-btn" onclick="applyScenario('no-inspect')" id="btn-no-inspect">No Inspection (Milestone)</button>
+    <button class="rtl-toggle" id="languageToggle" onclick="toggleLanguage()">العربية</button>
+  </div>
+
+  <!-- ============================================================
+       STEPPER INSTANCES
+  ============================================================ -->
+
+  <!-- MAIN INTERACTIVE STEPPER -->
+  <div class="preview-title">StatusStepper — Live Preview</div>
+  <div class="preview-card">
+    <div class="preview-card-label" id="scenarioLabel">Scenario: Step 2 — Execution in progress</div>
+    <div class="stepper-container">
+      <div class="time-line" id="stepperTimeline">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL STATES REFERENCE STRIP -->
+  <div class="preview-title">All Step States — Reference</div>
+  <div class="preview-card">
+    <div style="padding: 14px 42px 0; display:flex; gap:32px; flex-wrap:wrap; align-items:flex-end;">
+
+      <!-- pending -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--g400);">Pending</span>
+        <div class="step">
+          <div class="numbering"><p class="numbering__text">1</p></div>
+          <p class="status">Payment</p>
+        </div>
+      </div>
+
+      <!-- active -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--g900);">Active</span>
+        <div class="step">
+          <div class="numbering numbering--active"><p class="numbering__text">2</p></div>
+          <p class="status status--active">Execution</p>
+        </div>
+      </div>
+
+      <!-- done -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--done);">Completed</span>
+        <div class="step">
+          <div class="numbering numbering--done"><p class="numbering__text">1</p></div>
+          <p class="status status--done">Payment</p>
+        </div>
+      </div>
+
+      <!-- escalated -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--abriviation);">Escalated</span>
+        <div class="step">
+          <div class="numbering numbering--escalated"><p class="numbering__text">2</p></div>
+          <p class="status status--escalated">Execution</p>
+          <p class="step-label">Arbitration in progress</p>
+        </div>
+      </div>
+
+      <!-- escalated + resolved -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--abriviation);">Arbitrated</span>
+        <div class="step">
+          <div class="numbering numbering--escalated"><p class="numbering__text">2</p></div>
+          <p class="status status--escalated">Execution</p>
+          <p class="step-label">Arbitrated</p>
+        </div>
+      </div>
+
+      <!-- skipped -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--g400);">Skipped</span>
+        <div class="step">
+          <div class="numbering numbering--escalated"><p class="numbering__text">-</p></div>
+          <p class="status status--skipped">Approval</p>
+        </div>
+      </div>
+
+    </div>
+    <div style="padding:20px 42px 0;display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:20px;">
+      <div style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--g600);">
+        <span class="swatch" style="background:var(--stepperDisabled);"></span>Pending circle
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--g600);">
+        <span class="swatch" style="background:var(--g900);"></span>Active circle (#283743)
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--g600);">
+        <span class="swatch" style="background:var(--done);"></span>Completed circle (#44C16E)
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--g600);">
+        <span class="swatch" style="background:var(--abriviation);"></span>Escalated circle (#D18B49)
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--g600);">
+        <span style="display:inline-block;width:24px;height:2px;background:var(--lineBorder);vertical-align:middle;margin-right:6px;"></span>Connector line (#F3F3F3)
+      </div>
+    </div>
+  </div>
+
+  <!-- ANNOTATION -->
+  <div class="annotation">
+    <h3>Design Spec Notes</h3>
+    <table>
+      <tr><td>Component</td><td>StatusStepper — contract status timeline</td></tr>
+      <tr><td>Container padding</td><td>21px 42px (desktop) · 21px 24px (≤600px) · 21px 0 (≤450px)</td></tr>
+      <tr><td>Container min-height</td><td>105px · border-bottom: 1px solid #F3F4F5</td></tr>
+      <tr><td>Circle size</td><td>23.63 × 23.63 px · border-radius: 50%</td></tr>
+      <tr><td>Circle label font</td><td>Rubik 700 12px — color white (active/done/escalated) or #9FA6AB (pending)</td></tr>
+      <tr><td>Step label (pending)</td><td>Rubik 400 12px · color #9FA6AB</td></tr>
+      <tr><td>Step label (active)</td><td>Rubik 600 14px · line-height 21px · color #283743</td></tr>
+      <tr><td>Step label (completed)</td><td>Rubik 400 14px · color #44C16E</td></tr>
+      <tr><td>Sub-label (escalation/arbitrated)</td><td>Rubik 400 10px · line-height 15px · color #D18B49</td></tr>
+      <tr><td>Connector line</td><td>height 2px · flex-grow 1 · bg #F3F3F3 · margin-top 11.98px</td></tr>
+      <tr><td>Step margin</td><td>0 5px</td></tr>
+      <tr><td>Last step</td><td>margin-inline-start: -10px</td></tr>
+      <tr><td>Step3 (Inspection)</td><td>Shown when: non-MILESTONE contract, OR MILESTONE with isInspectable=true</td></tr>
+      <tr><td>Step4 label variant</td><td>"Money Transfer" for Haraj org/client · "Completion" for all others</td></tr>
+      <tr><td>Step4 number</td><td>4 when Step3 visible · 3 when Step3 hidden (MILESTONE + !isInspectable)</td></tr>
+      <tr><td>Font</td><td>Rubik (Google Fonts) — weights 400, 500, 600, 700</td></tr>
+      <tr><td>RTL support</td><td>dir="rtl" on &lt;html&gt; — layout mirrors via flex + margin-inline-start</td></tr>
+    </table>
+  </div>
+
+</div><!-- /preview-shell -->
+
+<script>
+  /* ================================================================
+     DESIGNER CONSTANTS
+     — Edit these values to immediately update the live preview above
+  ================================================================ */
+  const I18N = {
+    en: {
+      scenarioBarLabel: 'Scenario:',
+      languageToggle: 'العربية',
+      scenarioButtons: {
+        step1: 'Step 1 — Awaiting Payment',
+        step2: 'Step 2 — Execution (active)',
+        step3: 'Step 3 — Inspection (active)',
+        step4: 'Step 4 — Completion',
+        escalated: 'Escalation',
+        completed: 'Fully Completed',
+        'no-inspect': 'No Inspection (Milestone)',
+      },
+      scenarioLabels: {
+        step1: 'Scenario: Step 1 — Awaiting Payment',
+        step2: 'Scenario: Step 2 — Execution in progress',
+        step3: 'Scenario: Step 3 — Inspection (Approval) active',
+        step4: 'Scenario: Step 4 — Awaiting Completion',
+        escalated: 'Scenario: Step 2 — Escalation in progress (Delivery dispute)',
+        completed: 'Scenario: Fully Completed',
+        'no-inspect': 'Scenario: Milestone contract — No Inspection step (3 steps only)',
+      },
+      labels: {
+        step1: 'Payment',
+        step2: 'Execution',
+        step3: 'Approval',
+        step4: 'Completion',
+        step4Haraj: 'Money Transfer',
+      },
+      subLabels: {
+        arbitrationInProgress: 'Arbitration in progress',
+        arbitrated: 'Arbitrated',
+        skip: '-',
+      },
+    },
+    ar: {
+      scenarioBarLabel: 'السيناريو:',
+      languageToggle: 'English',
+      scenarioButtons: {
+        step1: 'الخطوة 1 — بانتظار الدفع',
+        step2: 'الخطوة 2 — التنفيذ (نشط)',
+        step3: 'الخطوة 3 — المعاينة (نشط)',
+        step4: 'الخطوة 4 — الإكمال',
+        escalated: 'تصعيد',
+        completed: 'مكتمل بالكامل',
+        'no-inspect': 'بدون معاينة (عقد مراحل)',
+      },
+      scenarioLabels: {
+        step1: 'السيناريو: الخطوة 1 — بانتظار الدفع',
+        step2: 'السيناريو: الخطوة 2 — التنفيذ قيد التقدم',
+        step3: 'السيناريو: الخطوة 3 — المعاينة (الموافقة) نشطة',
+        step4: 'السيناريو: الخطوة 4 — بانتظار الإكمال',
+        escalated: 'السيناريو: الخطوة 2 — تصعيد قيد التقدم (نزاع تسليم)',
+        completed: 'السيناريو: مكتمل بالكامل',
+        'no-inspect': 'السيناريو: عقد مراحل — بدون خطوة معاينة (3 خطوات فقط)',
+      },
+      labels: {
+        step1: 'الدفع',
+        step2: 'التنفيذ',
+        step3: 'الموافقة',
+        step4: 'الإكمال',
+        step4Haraj: 'تحويل المبلغ',
+      },
+      subLabels: {
+        arbitrationInProgress: 'التحكيم قيد التقدم',
+        arbitrated: 'تم التحكيم',
+        skip: '-',
+      },
+    },
+  };
+
+  let currentLanguage = 'en';
+
+  const DESIGNER = {
+
+    // Active step (1 = Payment, 2 = Execution, 3 = Inspection, 4 = Completion)
+    activeStep: 2,
+
+    // Show Step 3 (Inspection / Approval)?
+    // Rule: false only for MILESTONE contracts where isInspectable === false
+    showStep3: true,
+
+    // Contract type: 'REGULAR' | 'MILESTONE'
+    contractType: 'REGULAR',
+
+    // Is Haraj client/org? (changes Step4 label)
+    isHaraj: false,
+
+    // Step labels (from en.json translations)
+    labels: { ...I18N.en.labels },
+
+    // Sub-labels (escalation / arbitration state text)
+    subLabels: { ...I18N.en.subLabels },
+
+    // State colours (CSS variable names — resolved at runtime)
+    colors: {
+      pending:   { bg: '#F8F9F9', num: '#9FA6AB', label: '#9FA6AB' },
+      active:    { bg: '#283743', num: '#ffffff', label: '#283743' },
+      done:      { bg: '#44C16E', num: '#ffffff', label: '#44C16E' },
+      escalated: { bg: '#D18B49', num: '#ffffff', label: '#283743' },
+      connector: '#F3F3F3',
+    },
+
+    // Escalation flags (used in escalated / arbitrated scenarios)
+    escalation: {
+      delivery: false,   // CUSTOMER_DENY_DELIVERY or PROVIDER_ESCALATE_DELIVERY
+      inspection: false, // CUSTOMER_REJECT_ITEM or PROVIDER_ESCALATE_ITEM
+      resolved: false,   // escalation present but no longer in *_ESCALATION status
+      skipped: false,    // step3 skipped via delivery escalation resolved by admin
+    },
+  };
+
+  /* ================================================================
+     SCENARIOS
+     Pre-configured states for the switcher buttons
+  ================================================================ */
+  const SCENARIOS = {
+    step1: {
+      label: I18N.en.scenarioLabels.step1,
+      activeStep: 1, showStep3: true, contractType: 'REGULAR', isHaraj: false,
+      escalation: { delivery: false, inspection: false, resolved: false, skipped: false },
+    },
+    step2: {
+      label: I18N.en.scenarioLabels.step2,
+      activeStep: 2, showStep3: true, contractType: 'REGULAR', isHaraj: false,
+      escalation: { delivery: false, inspection: false, resolved: false, skipped: false },
+    },
+    step3: {
+      label: I18N.en.scenarioLabels.step3,
+      activeStep: 3, showStep3: true, contractType: 'REGULAR', isHaraj: false,
+      escalation: { delivery: false, inspection: false, resolved: false, skipped: false },
+    },
+    step4: {
+      label: I18N.en.scenarioLabels.step4,
+      activeStep: 4, showStep3: true, contractType: 'REGULAR', isHaraj: false,
+      escalation: { delivery: false, inspection: false, resolved: false, skipped: false },
+    },
+    escalated: {
+      label: I18N.en.scenarioLabels.escalated,
+      activeStep: 2, showStep3: true, contractType: 'REGULAR', isHaraj: false,
+      escalation: { delivery: true, inspection: false, resolved: false, skipped: false },
+    },
+    completed: {
+      label: I18N.en.scenarioLabels.completed,
+      activeStep: 5, showStep3: true, contractType: 'REGULAR', isHaraj: false,
+      escalation: { delivery: false, inspection: false, resolved: false, skipped: false },
+    },
+    'no-inspect': {
+      label: I18N.en.scenarioLabels['no-inspect'],
+      activeStep: 2, showStep3: false, contractType: 'MILESTONE', isHaraj: false,
+      escalation: { delivery: false, inspection: false, resolved: false, skipped: false },
+    },
+  };
+
+  /* ================================================================
+     RENDER ENGINE
+  ================================================================ */
+  function getStepState(stepIndex, cfg) {
+    // stepIndex: 1 | 2 | 3 | 4
+    const { activeStep, escalation } = cfg;
+
+    // Special escalation logic for step 2
+    if (stepIndex === 2) {
+      if (escalation.delivery && !escalation.resolved) return 'escalated';
+      if (escalation.delivery && escalation.resolved)  return 'escalated-resolved';
+    }
+    // Special escalation logic for step 3
+    if (stepIndex === 3) {
+      if (escalation.skipped) return 'skipped';
+      if (escalation.inspection && !escalation.resolved) return 'escalated';
+      if (escalation.inspection && escalation.resolved)  return 'escalated-resolved';
+    }
+
+    if (activeStep > stepIndex) return 'done';
+    if (activeStep === stepIndex) return 'active';
+    return 'pending';
+  }
+
+  function renderStep(number, label, state, subLabel) {
+    const circleClass = {
+      pending:             '',
+      active:              'numbering--active',
+      done:                'numbering--done',
+      escalated:           'numbering--escalated',
+      'escalated-resolved':'numbering--escalated',
+      skipped:             'numbering--escalated',
+    }[state] || '';
+
+    const labelClass = {
+      pending:             '',
+      active:              'status--active',
+      done:                'status--done',
+      escalated:           'status--escalated',
+      'escalated-resolved':'status--escalated',
+      skipped:             'status--skipped',
+    }[state] || '';
+
+    const subLabelHtml = subLabel
+      ? `<p class="step-label">${subLabel}</p>`
+      : '';
+
+    return `
+      <div class="step${number === '__last' ? ' step--last' : ''}">
+        <div class="numbering ${circleClass}">
+          <p class="numbering__text">${number}</p>
+        </div>
+        <p class="status ${labelClass}">${label}${subLabelHtml}</p>
+      </div>
+    `;
+  }
+
+  function renderConnector(isDone) {
+    return `<div class="line${isDone ? ' line--done' : ''}"></div>`;
+  }
+
+  function renderStepper(cfg) {
+    const { activeStep, showStep3, isHaraj, escalation } = cfg;
+    const L = cfg.labels || DESIGNER.labels;
+    const SL = cfg.subLabels || DESIGNER.subLabels;
+
+    let html = '';
+
+    // ---- Step 1 ----
+    const s1 = getStepState(1, cfg);
+    html += renderStep('1', L.step1, s1, null);
+    html += renderConnector(s1 === 'done');
+
+    // ---- Step 2 ----
+    const s2 = getStepState(2, cfg);
+    let s2Sub = null;
+    if (escalation.delivery && !escalation.resolved) s2Sub = SL.arbitrationInProgress;
+    if (escalation.delivery && escalation.resolved)  s2Sub = SL.arbitrated;
+    html += renderStep('2', L.step2, s2, s2Sub);
+    html += renderConnector(s2 === 'done');
+
+    // ---- Step 3 (conditional) ----
+    if (showStep3) {
+      const s3 = getStepState(3, cfg);
+      let s3Num = '3';
+      if (s3 === 'skipped') s3Num = SL.skip;
+
+      let s3Sub = null;
+      if (escalation.inspection && !escalation.resolved && !escalation.skipped) s3Sub = SL.arbitrationInProgress;
+      if (escalation.inspection && escalation.resolved  && !escalation.skipped) s3Sub = SL.arbitrated;
+
+      html += renderStep(s3Num, L.step3, s3, s3Sub);
+      html += renderConnector(s3 === 'done');
+    }
+
+    // ---- Step 4 ----
+    // Number: 4 when step3 shown, 3 when step3 hidden
+    const step4Num = showStep3 ? '4' : '3';
+    const step4Label = isHaraj ? L.step4Haraj : L.step4;
+    const s4 = getStepState(4, cfg);
+    html += renderStep(step4Num, step4Label, s4, null);
+
+    document.getElementById('stepperTimeline').innerHTML = html;
+    // Fix last step margin
+    const steps = document.querySelectorAll('#stepperTimeline .step');
+    if (steps.length) {
+      steps[steps.length - 1].classList.add('step--last');
+    }
+  }
+
+  /* ================================================================
+     SCENARIO SWITCHER
+  ================================================================ */
+  let currentScenario = 'step2';
+
+  function applyScenario(id) {
+    const s = SCENARIOS[id];
+    if (!s) return;
+    currentScenario = id;
+
+    // Merge scenario into DESIGNER constants
+    Object.assign(DESIGNER, {
+      activeStep: s.activeStep,
+      showStep3: s.showStep3,
+      contractType: s.contractType,
+      isHaraj: s.isHaraj,
+      escalation: { ...s.escalation },
+    });
+
+    document.getElementById('scenarioLabel').textContent = s.label;
+
+    // Update button states
+    document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('btn-' + id)?.classList.add('active');
+
+    renderStepper(DESIGNER);
+  }
+
+  /* ================================================================
+     RTL TOGGLE
+  ================================================================ */
+  function updateLanguageUiText() {
+    const T = I18N[currentLanguage];
+    document.getElementById('scenarioBarLabel').textContent = T.scenarioBarLabel;
+    document.getElementById('languageToggle').textContent = T.languageToggle;
+    document.getElementById('btn-step1').textContent = T.scenarioButtons.step1;
+    document.getElementById('btn-step2').textContent = T.scenarioButtons.step2;
+    document.getElementById('btn-step3').textContent = T.scenarioButtons.step3;
+    document.getElementById('btn-step4').textContent = T.scenarioButtons.step4;
+    document.getElementById('btn-escalated').textContent = T.scenarioButtons.escalated;
+    document.getElementById('btn-completed').textContent = T.scenarioButtons.completed;
+    document.getElementById('btn-no-inspect').textContent = T.scenarioButtons['no-inspect'];
+  }
+
+  function updateScenarioLabelsForLanguage() {
+    const labels = I18N[currentLanguage].scenarioLabels;
+    SCENARIOS.step1.label = labels.step1;
+    SCENARIOS.step2.label = labels.step2;
+    SCENARIOS.step3.label = labels.step3;
+    SCENARIOS.step4.label = labels.step4;
+    SCENARIOS.escalated.label = labels.escalated;
+    SCENARIOS.completed.label = labels.completed;
+    SCENARIOS['no-inspect'].label = labels['no-inspect'];
+  }
+
+  function toggleLanguage() {
+    const html = document.documentElement;
+    currentLanguage = currentLanguage === 'en' ? 'ar' : 'en';
+    const isArabic = currentLanguage === 'ar';
+    html.dir = isArabic ? 'rtl' : 'ltr';
+    html.lang = currentLanguage;
+
+    DESIGNER.labels = { ...I18N[currentLanguage].labels };
+    DESIGNER.subLabels = { ...I18N[currentLanguage].subLabels };
+
+    updateScenarioLabelsForLanguage();
+    updateLanguageUiText();
+    applyScenario(currentScenario);
+  }
+
+  /* ================================================================
+     INITIAL RENDER
+  ================================================================ */
+  updateLanguageUiText();
+  applyScenario('step2');
+</script>
+</body>
+</html>

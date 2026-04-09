@@ -419,6 +419,26 @@ app.post("/messages", express.json(), async (req, res) => {
     }
     await transport.handlePostMessage(req, res);
 });
+// ─── STATIC FILES + REST API ───────────────────────────────────────────────
+// Serve everything under /data as static (component HTML previews, SVGs, etc.)
+app.use("/static", express.static(DATA_DIR));
+// Serve the preview page
+app.get("/preview", (_req, res) => {
+    res.sendFile(path.join(DATA_DIR, "preview.html"));
+});
+// REST: always re-read from disk so changes are reflected without restart
+app.get("/api/components", (_req, res) => {
+    res.json(loadJSON("components.json") || { components: [] });
+});
+app.get("/api/tokens", (_req, res) => {
+    res.json(loadJSON("tokens.json") || {});
+});
+app.get("/api/component/:name", (req, res) => {
+    const data = loadJSON("components.json");
+    const comp = data?.components?.find((c) => c.name.toLowerCase() === req.params.name.toLowerCase());
+    res.json(comp ?? { error: "not found" });
+});
+// ─── START ──────────────────────────────────────────────────────────────────
 // Start server
 app.listen(PORT, "0.0.0.0", () => {
     console.error(`[waffy] MCP SSE server listening on http://0.0.0.0:${PORT}`);
