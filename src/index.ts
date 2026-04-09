@@ -575,8 +575,6 @@ app.post("/messages", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
 // ─── STATIC FILES + REST API ───────────────────────────────────────────────
 
 // Serve everything under /data as static (component HTML previews, SVGs, etc.)
@@ -607,7 +605,7 @@ app.get("/api/component/:name", (req, res) => {
 // ─── START ──────────────────────────────────────────────────────────────────
 
 // Start server
->>>>>>> 1a6371c (update mcp server)
+// Start server
 app.listen(PORT, "0.0.0.0", () => {
   console.error(`[waffy] MCP SSE server listening on http://0.0.0.0:${PORT}`);
   console.error(`[waffy] Health check: http://0.0.0.0:${PORT}/health`);
